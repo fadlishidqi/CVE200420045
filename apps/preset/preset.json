@@ -3,6 +3,8 @@
     "normalization": false,
     "outlier": false
   },
+  "wctid": "P9PIA0",
+  "technum": "IMM04",
   "parameters": {
     "INJ-MAX-PRESSURE": {
       "nRangeMax": 160,
