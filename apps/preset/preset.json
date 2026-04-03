@@ -7,28 +7,28 @@
   "technum": "IMM04",
   "parameters": {
     "INJ-MAX-PRESSURE": {
-      "nRangeMax": 160,
-      "nRangeMin": -1,
-      "kategori": true,
-      "treshold": true
+      "rangeMax": 160,
+      "rangeMin": -1,
+      "category": true,
+      "threshold": true
     },
     "CUSHION-POSITION": {
-      "nRangeMax": 70,
-      "nRangeMin": -2,
-      "kategori": true,
-      "treshold": false
+      "rangeMax": 70,
+      "rangeMin": -2,
+      "category": true,
+      "threshold": false
     },
     "NH1-TEMP": {
-      "nRangeMax": 238,
-      "nRangeMin": -3,
-      "kategori": false,
-      "treshold": false
+      "rangeMax": 238,
+      "rangeMin": -3,
+      "category": false,
+      "threshold": false
     },
     "NH2-TEMP": {
-      "nRangeMax": 250,
-      "nRangeMin": -4,
-      "kategori": false,
-      "treshold": false
+      "rangeMax": 250,
+      "rangeMin": -4,
+      "category": false,
+      "threshold": false
     }
   }
 }
