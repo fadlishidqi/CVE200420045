@@ -1,21 +1,21 @@
 from apps.common.replaceData import replaceData
 
 def main():
-    PathSource = "apps/data/result/filteredTime.json"
-    PathTarget = "apps/data/result/replacedData.json"
+    pathSource = "apps/data/result/filteredTime.json"
+    pathTarget = "apps/data/result/replacedData.json"
 
-    KeySource = ["category"] 
-    FromData = ["C", "NC"]
-    ToData = [1, 0]
+    keySource = ["category"] 
+    fromData = ["C", "NC"]
+    toData = [1, 0]
 
     print("Memulai proses replace data...")
 
     sukses = replaceData(
-        path_source=PathSource,
-        path_target=PathTarget,
-        key_source=KeySource,
-        from_val=FromData,
-        to_val=ToData
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        keySource=keySource,
+        fromData=fromData,
+        toData=toData
     )
 
     if sukses:

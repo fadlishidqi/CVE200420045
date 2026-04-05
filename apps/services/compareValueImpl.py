@@ -1,28 +1,28 @@
 from apps.common.compareValue import compareValue
 
 def main():
-    PathSource = "apps/data/result/replacedData.json"
-    PathTarget = "apps/data/result/comparedValue.json"
+    pathSource = "apps/data/result/replacedData.json"
+    pathTarget = "apps/data/result/comparedValue.json"
 
-    KeySource = "nvalue"
-    KeyResult = "threshold"
-    DefaultValue = 0
+    keySource = "nvalue"
+    keyResult = "threshold"
+    defaultValue = 0
 
-    KeyComparation = ["llow", "hhigh", "low", "high"] 
-    Operators = ["<", ">", "<", ">"]
-    ResultComparation = [-2, 2, -1, 1]
+    keyCompare = ["llow", "hhigh", "low", "high"] 
+    operators = ["<", ">", "<", ">"]
+    resultCompare = [-2, 2, -1, 1]
 
     print("Memulai proses komparasi nilai...")
 
     sukses = compareValue(
-        path_source=PathSource,
-        path_target=PathTarget,
-        key_source=KeySource,
-        key_compare=KeyComparation,
-        operators=Operators,
-        result_compare=ResultComparation,
-        default_value=DefaultValue,
-        key_result=KeyResult
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        keySource=keySource,
+        keyCompare=keyCompare,
+        operators=operators,
+        resultCompare=resultCompare,
+        defaultValue=defaultValue,
+        keyResult=keyResult
     )
 
     if sukses:

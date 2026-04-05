@@ -4,20 +4,26 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def renameJsonParam(path_source: str | Path, path_target: str | Path, key_source: list, key_target: list) -> bool:
-    if not path_source or not path_target:
+def renameJsonParam(
+    pathSource: str | Path,
+    pathTarget: str | Path,
+    keySource: list,
+    keyTarget: list
+) -> bool:
+    
+    if not pathSource or not pathTarget:
         logger.error("PathSource atau PathTarget tidak boleh kosong.")
         return False
 
-    if not key_source or not key_target:
+    if not keySource or not keyTarget:
         logger.error("KeySource atau KeyTarget tidak boleh kosong.")
         return False
 
-    if len(key_source) != len(key_target):
-        logger.error(f"Gagal: Jumlah KeySource ({len(key_source)}) dan KeyTarget ({len(key_target)}) tidak sama!")
+    if len(keySource) != len(keyTarget):
+        logger.error(f"Gagal: Jumlah KeySource ({len(keySource)}) dan KeyTarget ({len(keyTarget)}) tidak sama!")
         return False
 
-    source_obj = Path(path_source)
+    source_obj = Path(pathSource)
     
     if not source_obj.exists():
         logger.error(f"File sumber tidak ditemukan: {source_obj}")
@@ -27,17 +33,17 @@ def renameJsonParam(path_source: str | Path, path_target: str | Path, key_source
         logger.info(f"Membaca file untuk di-rename: {source_obj.name}")
         df = pd.read_json(source_obj)
 
-        missing_cols = [col for col in key_source if col not in df.columns]
+        missing_cols = [col for col in keySource if col not in df.columns]
         if missing_cols:
             logger.error(f"Kolom berikut tidak ditemukan di source: {missing_cols}")
             return False
         
-        rename_mapping = dict(zip(key_source, key_target))
+        rename_mapping = dict(zip(keySource, keyTarget))
         
         df = df.rename(columns=rename_mapping)
         logger.info(f"Berhasil mengubah nama kolom: {rename_mapping}")
 
-        target_obj = Path(path_target)
+        target_obj = Path(pathTarget)
         target_obj.parent.mkdir(parents=True, exist_ok=True)
         
         df.to_json(target_obj, orient="records", indent=4)

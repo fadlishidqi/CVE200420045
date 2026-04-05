@@ -1,22 +1,20 @@
 from apps.common.aggregateTime import aggregateTime
 
 def main():
-    PathSource = "apps/data/result/convertedTime.json" 
-    PathTarget = "apps/data/result/aggregatedTime.json"
-
-    KeyTime = "t" 
-    KeyValues = ["nvalue"]
-
-    ExtraGroupKeys = ["wct", "technum", "param"] 
+    pathSource = "apps/data/result/convertedTime.json" 
+    pathTarget = "apps/data/result/aggregatedTime.json"
+    keyTime = "t" 
+    keyValues = ["nvalue"]
+    groupKeys = ["wct", "technum", "param"] 
 
     print("Memulai proses agregasi waktu...")
 
     sukses = aggregateTime(
-        path_source=PathSource,
-        path_target=PathTarget,
-        key_time=KeyTime,
-        key_values=KeyValues,
-        extra_group_keys=ExtraGroupKeys
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        keyTime=keyTime,
+        keyValues=keyValues,
+        groupKeys=groupKeys
     )
 
     if sukses:

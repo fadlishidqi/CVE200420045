@@ -4,20 +4,24 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def mergeJson(path_source: list | None = None, path_target: str | None = None, target_columns: list | None = None) -> bool:
+def mergeJson(
+    pathSource: list | None = None,
+    pathTarget: str | None = None,
+    keySource: list | None = None
+) -> bool:
 
-    if not path_source:
+    if not pathSource:
         logger.error("PathSource kosong. Harap berikan list file yang ingin digabungkan.")
         return False
-        
-    if not path_target:
+
+    if not pathTarget:
         logger.error("PathTarget kosong. Harap berikan lokasi penyimpanan file hasil.")
         return False
 
-    logger.info(f"Memulai proses merge untuk {len(path_source)} file JSON...")
+    logger.info(f"Memulai proses merge untuk {len(pathSource)} file JSON...")
     all_dataframes = []
 
-    for file_path in path_source:
+    for file_path in pathSource:
         path_obj = Path(file_path)
         
         if not path_obj.exists():
@@ -27,8 +31,8 @@ def mergeJson(path_source: list | None = None, path_target: str | None = None, t
         try:
             df = pd.read_json(path_obj)
             
-            if target_columns:
-                available_cols = [col for col in target_columns if col in df.columns]
+            if keySource:
+                available_cols = [col for col in keySource if col in df.columns]
                 df = df[available_cols]
                 
             all_dataframes.append(df)

@@ -1,16 +1,16 @@
 from apps.common.mergeJson import mergeJson
 
 def main():
-    PathSource = [
+    pathSource = [
         "apps/data/raw/POLIMER_CUSHION-POSITION_3M2026.json",
         "apps/data/raw/POLIMER_INJ-MAX-PRESSURE_3M2026.json",
         "apps/data/raw/POLIMER_NH1-TEMP_3M2026.json",
         "apps/data/raw/POLIMER_NH2-TEMP_3M2026.json",
     ]
 
-    PathTarget = "apps/data/result/rawMerge.json"
+    pathTarget = "apps/data/result/rawMerge.json"
 
-    KeySource = [
+    keySource = [
         "time", "dcrea", "vwctid", "vmachineid", 
         "vparam", "nvalue", "vvalue", "nhhigh", "nhigh", "nllow", "nlow", "catg"
     ]
@@ -18,9 +18,9 @@ def main():
     print("Memulai proses merge data...")
 
     sukses = mergeJson(
-        path_source=PathSource,
-        path_target=PathTarget,
-        target_columns=KeySource
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        keySource=keySource
     )
 
     if sukses:

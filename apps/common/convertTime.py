@@ -4,7 +4,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def convertTime(pathSource: str | Path, pathTarget: str | Path, keySource: list, formatTime: str) -> bool:
+def convertTime(
+    pathSource: str | Path,
+    pathTarget: str | Path,
+    keySource: list,
+    formatTime: str
+) -> bool:
     
     if not pathSource or not pathTarget:
         logger.error("PathSource atau PathTarget tidak boleh kosong.")

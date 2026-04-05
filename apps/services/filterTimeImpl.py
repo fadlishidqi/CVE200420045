@@ -1,23 +1,23 @@
 from apps.common.filterTime import filterTime
 
 def main():
-    PathSource = "apps/data/result/convertedTime.json"
-    PathTarget = "apps/data/result/filteredTime.json"
+    pathSource = "apps/data/result/convertedTime.json"
+    pathTarget = "apps/data/result/filteredTime.json"
 
-    KeyStart = "t"
-    KeyEnd = "dcrea"
-    MaxDelta = 1
-    UnitDelta = "hours"
+    keyStart = "t"
+    keyEnd = "dcrea"
+    maxDelta = 1
+    unitDelta = "hours"
 
     print("Memulai proses filter time...")
 
     sukses = filterTime(
-        path_source=PathSource,
-        path_target=PathTarget,
-        key_start=KeyStart,
-        key_end=KeyEnd,
-        max_delta=MaxDelta,
-        unit_delta=UnitDelta
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        keyStart=keyStart,
+        keyEnd=keyEnd,
+        maxDelta=maxDelta,
+        unitDelta=unitDelta
     )
 
     if sukses:

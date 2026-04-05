@@ -1,19 +1,19 @@
 from apps.common.renameJsonParam import renameJsonParam
 
 def main():
-    PathSource = "apps/data/result/rawMerge.json"
-    PathTarget = "apps/data/result/renamed.json"
-    
-    KeySource = ['time', 'vmachineid', 'vwctid', 'vparam', 'catg', 'nllow', 'nlow', 'nhigh', 'nhhigh']
-    KeyTarget = ['t', 'technum', 'wct', 'param', 'category', 'llow', 'low', 'high', 'hhigh']
+    pathSource = "apps/data/result/rawMerge.json"
+    pathTarget = "apps/data/result/renamed.json"
+
+    keySource = ['time', 'vmachineid', 'vwctid', 'vparam', 'catg', 'nllow', 'nlow', 'nhigh', 'nhhigh']
+    keyTarget = ['t', 'technum', 'wct', 'param', 'category', 'llow', 'low', 'high', 'hhigh']
 
     print("Memulai ubah nama parameter...")
 
     sukses = renameJsonParam(
-        path_source=PathSource,
-        path_target=PathTarget,
-        key_source=KeySource,
-        key_target=KeyTarget
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        keySource=keySource,
+        keyTarget=keyTarget
     )
 
     if sukses:

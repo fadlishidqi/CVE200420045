@@ -1,18 +1,18 @@
 from apps.common.convertTime import convertTime
 
 def main():
-    PathSource = "apps/data/result/renamed.json" 
-    PathTarget = "apps/data/result/convertedTime.json"
-    KeySource = ["t", "dcrea"] 
-    FormatTime = "%d-%m-%Y %H:%M:%S"
+    pathSource = "apps/data/result/renamed.json" 
+    pathTarget = "apps/data/result/convertedTime.json"
+    keySource = ["t", "dcrea"] 
+    formatTime = "%d-%m-%Y %H:%M:%S"
 
     print("Memulai proses konversi format waktu...")
 
     sukses = convertTime(
-        pathSource=PathSource,
-        pathTarget=PathTarget,
-        keySource=KeySource,
-        formatTime=FormatTime
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        keySource=keySource,
+        formatTime=formatTime
     )
 
     if sukses:

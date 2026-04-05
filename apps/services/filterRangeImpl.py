@@ -1,24 +1,21 @@
 from apps.common.filterRange import filterRange
 
 def main():
-    # Lokasi file-file Anda
-    PathSource = "apps/data/result/aggregatedTime.json"
-    PathTarget = "apps/data/result/filteredRange.json"
-    
-    # Lokasi file preset JSON Anda
-    PathPreset = "apps/preset/preset.json"
+    pathSource = "apps/data/result/aggregatedTime.json"
+    pathTarget = "apps/data/result/filteredRange.json"
+    pathPreset = "apps/preset/preset.json"
 
-    KeyValue = "nvalue"
-    KeyParam = "param"
+    keyValue = "nvalue"
+    keyParam = "param"
 
     print("Memulai proses filter range...")
 
     sukses = filterRange(
-        path_source=PathSource,
-        path_target=PathTarget,
-        path_preset=PathPreset,
-        key_value=KeyValue,
-        key_param=KeyParam
+        pathSource=pathSource,
+        pathTarget=pathTarget,
+        pathPreset=pathPreset,
+        keyValue=keyValue,
+        keyParam=keyParam
     )
 
     if sukses:
