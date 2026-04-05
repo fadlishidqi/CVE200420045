@@ -1,18 +1,9 @@
 import logging
 import sys
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
-
-from apps.config import settings
-
 
 def setup_logging():
-    """
-    Configure application-wide logging.
-    Call this once at application startup (in main.py).
-    """
 
-    log_level = getattr(logging, settings.log_level.upper(), logging.INFO)
+    log_level = getattr(logging, "INFO")
 
     logger = logging.getLogger()
     logger.setLevel(log_level)
