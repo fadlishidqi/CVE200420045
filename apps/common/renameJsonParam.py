@@ -64,7 +64,6 @@ def renameJsonParam(
         df = df.rename(columns=rename_mapping)
         logger.info(f"Berhasil mengubah nama kolom: {rename_mapping}")
 
-        # --- LOGIKA OUTPUT (Save File vs Return String) ---
         if pathTarget:
             target_obj = Path(pathTarget)
             target_obj.parent.mkdir(parents=True, exist_ok=True)

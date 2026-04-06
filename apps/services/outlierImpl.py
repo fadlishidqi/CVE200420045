@@ -1,35 +1,32 @@
-import pandas as pd
-from pathlib import Path
 from apps.common.outlier import apply_iqr_outlier
 
 def main():
-    pathSource = "apps/data/result/filteredRange.json"
+    pathSource = "apps/data/result/filteredRange.json" 
+    
     pathTarget = "apps/data/result/outlierHandled.json"
+    
     pathPreset = "apps/preset/preset.json"
-
-    groupCols = ["param"]
+    groupCols = ["technum", "param"]
     valueCol = "nvalue"
     paramCol = "param"
-    
-    try:
-        df = pd.read_json(pathSource)
-    except Exception as e:
-        print(f"Gagal membaca file JSON: {e}")
-        return
 
-    df_clean = apply_iqr_outlier(
-        df=df,
+    print("Memulai proses IQR Outlier JSON...")
+    hasil = apply_iqr_outlier(
+        pathSource=pathSource,
+        pathTarget=pathTarget,
         groupCols=groupCols,
         valueCol=valueCol,
         paramCol=paramCol,
         pathPreset=pathPreset
     )
 
-    target_obj = Path(pathTarget)
-    target_obj.parent.mkdir(parents=True, exist_ok=True)
-    df_clean.to_json(target_obj, orient="records", indent=4)
-    
-    print(f"Selesai! Data bebas outlier disimpan di: {pathTarget}")
+    if hasil is True:
+        print(f"Selesai! File hasil pembersihan outlier berhasil dibuat di: {pathTarget}\n")
+    elif isinstance(hasil, str):
+        print("Selesai! Data disimpan dalam JsonString.")
+        print(f"Bentuk datanya: {hasil[:100]}...\n")
+    else:
+        print("Gagal menjalankan IQR Outlier JSON.\n")
 
 if __name__ == "__main__":
     main()

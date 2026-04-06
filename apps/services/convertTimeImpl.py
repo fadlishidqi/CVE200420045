@@ -1,24 +1,28 @@
 from apps.common.convertTime import convertTime
 
 def main():
-    pathSource = "apps/data/result/renamed.json" 
+    pathSource = "apps/data/result/renamedData.json" 
+    
     pathTarget = "apps/data/result/convertedTime.json"
+    
     keySource = ["t", "dcrea"] 
     formatTime = "%d-%m-%Y %H:%M:%S"
 
-    print("Memulai proses konversi format waktu...")
-
-    sukses = convertTime(
+    print("Memulai proses convert format waktu JSON...")
+    hasil = convertTime(
         pathSource=pathSource,
         pathTarget=pathTarget,
         keySource=keySource,
         formatTime=formatTime
     )
 
-    if sukses:
-        print("Proses konversi waktu berhasil disimpan.")
+    if hasil is True:
+        print(f"Selesai! File hasil convert waktu berhasil dibuat di: {pathTarget}\n")
+    elif isinstance(hasil, str):
+        print("Selesai! Data disimpan dalam JsonString.")
+        print(f"Bentuk datanya: {hasil[:100]}...\n")
     else:
-        print("Proses konversi waktu gagal.")
+        print("Gagal menjalankan convert waktu JSON.\n")
 
 if __name__ == "__main__":
     main()

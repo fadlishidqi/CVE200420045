@@ -1,17 +1,16 @@
 from apps.common.pivotTable import pivotTable
 
 def main():
-    pathSource = "apps/data/result/aggregatedTime.json"
+    pathSource = "apps/data/result/filteredRange.json" 
     pathTarget = "apps/data/result/pivotedData.json"
-
-    indexCols = ["t", "wct", "technum"] 
+    
+    indexCols = ["t", "wct", "technum"]
     pivotCol = "param"
-    valueCol = "nvalue" 
+    valueCol = "nvalue"
     timeCol = "t"
 
-    print("Memulai proses Pivot Table data...")
-
-    sukses = pivotTable(
+    print("Memulai proses pivot table JSON...")
+    hasil = pivotTable(
         pathSource=pathSource,
         pathTarget=pathTarget,
         indexCols=indexCols,
@@ -20,10 +19,13 @@ def main():
         timeCol=timeCol
     )
 
-    if sukses:
-        print("Proses pivot data berhasil disimpan!")
+    if hasil is True:
+        print(f"Selesai! File hasil pivot berhasil dibuat di: {pathTarget}\n")
+    elif isinstance(hasil, str):
+        print("Selesai! Data disimpan dalam JsonString.")
+        print(f"Bentuk datanya: {hasil[:500]}...\n")
     else:
-        print("Proses pivot data gagal.")
+        print("Gagal menjalankan pivot table JSON.\n")
 
 if __name__ == "__main__":
     main()

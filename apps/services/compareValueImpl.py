@@ -12,9 +12,8 @@ def main():
     operators = ["<", ">", "<", ">"]
     resultCompare = [-2, 2, -1, 1]
 
-    print("Memulai proses komparasi nilai...")
-
-    sukses = compareValue(
+    print("Memulai proses komparasi data JSON...")
+    hasil = compareValue(
         pathSource=pathSource,
         pathTarget=pathTarget,
         keySource=keySource,
@@ -25,10 +24,13 @@ def main():
         keyResult=keyResult
     )
 
-    if sukses:
-        print("Proses komparasi berhasil disimpan.")
+    if hasil is True:
+        print(f"Selesai! File hasil komparasi berhasil dibuat di: {pathTarget}\n")
+    elif isinstance(hasil, str):
+        print("Selesai! Data disimpan dalam JsonString.")
+        print(f"Bentuk datanya: {hasil[:100]}...\n")
     else:
-        print("Proses komparasi gagal.")
+        print("Gagal menjalankan komparasi data JSON.\n")
 
 if __name__ == "__main__":
     main()

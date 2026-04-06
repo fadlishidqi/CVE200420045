@@ -2,32 +2,66 @@ import pandas as pd
 import json
 from pathlib import Path
 import logging
+import io
 
 logger = logging.getLogger(__name__)
 
 def apply_minmax_normalization(
-    df: pd.DataFrame, 
-    valueCol: str, 
-    paramCol: str,
-    pathPreset: str | Path
-) -> pd.DataFrame:
+    pathSource: str | Path | pd.DataFrame, 
+    pathTarget: str | Path | None = None,
+    valueCol: str | None = None, 
+    paramCol: str | None = None,
+    pathPreset: str | Path | dict | None = None
+) -> bool | str | pd.DataFrame:
     
-    preset_obj = Path(pathPreset)
-    if not preset_obj.exists():
-        logger.error(f"File preset tidak ditemukan: {preset_obj}")
-        return df
+    if pathPreset is None:
+        logger.error("PathPreset tidak boleh kosong.")
+        return False
         
     try:
-        with open(preset_obj, 'r') as f:
-            preset_data = json.load(f)
+        preset_data = {}
+        if isinstance(pathPreset, dict):
+            preset_data = pathPreset
+        elif isinstance(pathPreset, str) and (pathPreset.strip().startswith('{') or pathPreset.strip().startswith('[')):
+            preset_data = json.loads(pathPreset)
+        else:
+            preset_obj = Path(pathPreset)
+            if not preset_obj.exists():
+                logger.error(f"File preset tidak ditemukan: {preset_obj}")
+                return False
+            with open(preset_obj, 'r') as f:
+                preset_data = json.load(f)
             
         param_settings = preset_data.get("parameters", {})
         min_dict = {k: v.get("rangeMin") for k, v in param_settings.items()}
         max_dict = {k: v.get("rangeMax") for k, v in param_settings.items()}
 
+        df = None
+        if isinstance(pathSource, pd.DataFrame):
+            df = pathSource.copy()
+        elif isinstance(pathSource, str):
+            cleaned_str = pathSource.strip()
+            if cleaned_str.startswith('{') or cleaned_str.startswith('['):
+                logger.info("Input terdeteksi sebagai String JSON. Membaca dari memori...")
+                df = pd.read_json(io.StringIO(cleaned_str))
+            else:
+                source_obj = Path(pathSource)
+                if not source_obj.exists():
+                    logger.error(f"File sumber tidak ditemukan: {source_obj}")
+                    return False
+                df = pd.read_json(source_obj)
+        elif isinstance(pathSource, Path):
+            if not pathSource.is_file():
+                logger.error(f"File sumber tidak ditemukan: {pathSource}")
+                return False
+            df = pd.read_json(pathSource)
+        else:
+            logger.error("Tipe input pathSource tidak didukung!")
+            return False
+
         if paramCol not in df.columns or valueCol not in df.columns:
             logger.error(f"Kolom '{paramCol}' atau '{valueCol}' tidak ditemukan di data.")
-            return df
+            return False
 
         df['__temp_min'] = df[paramCol].map(min_dict)
         df['__temp_max'] = df[paramCol].map(max_dict)
@@ -45,8 +79,17 @@ def apply_minmax_normalization(
         df = df.drop(columns=['__temp_min', '__temp_max'])
         
         logger.info("Min-Max Normalization via Preset berhasil diterapkan.")
-        return df
+        
+        if pathTarget:
+            target_obj = Path(pathTarget)
+            target_obj.parent.mkdir(parents=True, exist_ok=True)
+            df.to_json(target_obj, orient="records", indent=4)
+            logger.info(f"SUKSES! File hasil normalisasi disimpan di: {target_obj}")
+            return True
+        else:
+            logger.info("pathTarget kosong. Mengembalikan hasil normalisasi sebagai String JSON.")
+            return df.to_json(orient="records")
         
     except Exception as e:
         logger.error(f"Error saat menjalankan fungsi Normalisasi via Preset: {e}")
-        return df
+        return False

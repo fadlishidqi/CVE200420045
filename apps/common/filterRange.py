@@ -2,28 +2,23 @@ import pandas as pd
 import json
 from pathlib import Path
 import logging
+import io
 
 logger = logging.getLogger(__name__)
 
 def filterRange(
     pathSource: str | Path, 
-    pathTarget: str | Path, 
-    pathPreset: str | Path, 
+    pathTarget: str | Path | None = None, 
+    pathPreset: str | Path | None = None, 
     keyValue: str = "nvalue", 
     keyParam: str = "param"
-) -> bool:
+) -> bool | str:
     
-    if not pathSource or not pathTarget or not pathPreset:
-        logger.error("PathSource, PathTarget, atau PathPreset tidak boleh kosong.")
+    if not pathSource or not pathPreset:
+        logger.error("PathSource atau PathPreset tidak boleh kosong.")
         return False
 
-    source_obj = Path(pathSource)
     preset_obj = Path(pathPreset)
-    
-    if not source_obj.exists():
-        logger.error(f"File sumber data tidak ditemukan: {source_obj}")
-        return False
-
     if not preset_obj.exists():
         logger.error(f"File preset tidak ditemukan: {preset_obj}")
         return False
@@ -41,8 +36,29 @@ def filterRange(
         min_dict = {k: v.get("rangeMin") for k, v in param_settings.items()}
         max_dict = {k: v.get("rangeMax") for k, v in param_settings.items()}
 
-        logger.info(f"Membaca file data: {source_obj.name}")
-        df = pd.read_json(source_obj)
+        df = None
+        
+        if isinstance(pathSource, str):
+            cleaned_str = pathSource.strip()
+            if cleaned_str.startswith('{') or cleaned_str.startswith('['):
+                logger.info("Input terdeteksi sebagai String JSON. Membaca dari memori...")
+                df = pd.read_json(io.StringIO(cleaned_str))
+            else:
+                source_obj = Path(pathSource)
+                if not source_obj.exists():
+                    logger.error(f"File sumber data tidak ditemukan: {source_obj}")
+                    return False
+                logger.info(f"Membaca file data: {source_obj.name}")
+                df = pd.read_json(source_obj)
+        elif isinstance(pathSource, Path):
+            if not pathSource.is_file():
+                logger.error(f"File sumber tidak ditemukan: {pathSource}")
+                return False
+            logger.info(f"Membaca file data: {pathSource.name}")
+            df = pd.read_json(pathSource)
+        else:
+            logger.error("Tipe input pathSource tidak didukung!")
+            return False
 
         if keyValue not in df.columns or keyParam not in df.columns:
             logger.error(f"Kolom '{keyValue}' atau '{keyParam}' tidak ditemukan di dataset.")
@@ -66,13 +82,15 @@ def filterRange(
         
         logger.info(f"Filter Range Selesai. {dropped_count} baris dibuang (Di luar batas preset atau parameter tidak terdaftar).")
 
-        target_obj = Path(pathTarget)
-        target_obj.parent.mkdir(parents=True, exist_ok=True)
-        
-        df_filtered.to_json(target_obj, orient="records", indent=4)
-        logger.info(f"SUKSES! File hasil filter range dengan preset disimpan di: {target_obj}")
-        
-        return True
+        if pathTarget:
+            target_obj = Path(pathTarget)
+            target_obj.parent.mkdir(parents=True, exist_ok=True)
+            df_filtered.to_json(target_obj, orient="records", indent=4)
+            logger.info(f"SUKSES! File hasil filter range dengan preset disimpan di: {target_obj}")
+            return True
+        else:
+            logger.info("pathTarget kosong. Mengembalikan hasil filter range sebagai String JSON.")
+            return df_filtered.to_json(orient="records")
         
     except Exception as e:
         logger.error(f"Gagal memproses filter range via preset: {e}")

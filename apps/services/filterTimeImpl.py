@@ -1,17 +1,16 @@
 from apps.common.filterTime import filterTime
 
 def main():
-    pathSource = "apps/data/result/aggregatedTime.json"
+    pathSource = "apps/data/result/convertedTime.json" 
     pathTarget = "apps/data/result/filteredTime.json"
-
+    
     keyStart = "t"
     keyEnd = "dcrea"
-    maxDelta = 1
-    unitDelta = "hours"
+    maxDelta = 5
+    unitDelta = "minutes"
 
-    print("Memulai proses filter time...")
-
-    sukses = filterTime(
+    print("Memulai proses filter time delta...")
+    hasil = filterTime(
         pathSource=pathSource,
         pathTarget=pathTarget,
         keyStart=keyStart,
@@ -20,10 +19,13 @@ def main():
         unitDelta=unitDelta
     )
 
-    if sukses:
-        print("Proses filter berhasil disimpan.")
+    if hasil is True:
+        print(f"Selesai! File hasil filter waktu berhasil dibuat di: {pathTarget}\n")
+    elif isinstance(hasil, str):
+        print("Selesai! Data disimpan dalam JsonString.")
+        print(f"Bentuk datanya: {hasil[:100]}...\n")
     else:
-        print("Proses filter gagal.")
+        print("Gagal menjalankan filter waktu JSON.\n")
 
 if __name__ == "__main__":
     main()

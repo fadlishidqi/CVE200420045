@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import logging
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -14,30 +15,46 @@ def mergeJson(
         logger.error("PathSource kosong. Harap berikan list file yang ingin digabungkan.")
         return False
 
-    logger.info(f"Memulai proses merge untuk {len(pathSource)} file JSON...")
+    logger.info(f"Memulai proses merge untuk {len(pathSource)} sumber data...")
     all_dataframes = []
 
-    for file_path in pathSource:
-        path_obj = Path(file_path)
-        
-        if not path_obj.exists():
-            logger.warning(f"File dilewati karena tidak ditemukan: {path_obj}")
-            continue
-            
+    for source_item in pathSource:
         try:
-            df = pd.read_json(path_obj)
+            df = None
             
+            if isinstance(source_item, str):
+                cleaned_str = source_item.strip()
+                if cleaned_str.startswith('{') or cleaned_str.startswith('['):
+                    logger.info("Membaca data dari String JSON memori...")
+                    df = pd.read_json(io.StringIO(cleaned_str))
+                else:
+                    path_obj = Path(source_item)
+                    if not path_obj.exists():
+                        logger.warning(f"File dilewati karena tidak ditemukan: {path_obj}")
+                        continue
+                    logger.info(f"Berhasil membaca file: {path_obj.name}")
+                    df = pd.read_json(path_obj)
+            elif isinstance(source_item, Path):
+                if not source_item.exists():
+                    logger.warning(f"File dilewati karena tidak ditemukan: {source_item}")
+                    continue
+                logger.info(f"Berhasil membaca file: {source_item.name}")
+                df = pd.read_json(source_item)
+            else:
+                logger.warning("Tipe source tidak didukung, dilewati.")
+                continue
+
             if keySource:
                 available_cols = [col for col in keySource if col in df.columns]
                 df = df[available_cols]
                 
             all_dataframes.append(df)
-            logger.info(f"Berhasil membaca: {path_obj.name}")
+            
         except Exception as e:
-            logger.error(f"Gagal memproses file {path_obj.name}: {e}")
+            logger.error(f"Gagal memproses sumber data: {e}")
 
     if not all_dataframes:
-        logger.error("Tidak ada data JSON dari PathSource.")
+        logger.error("Tidak ada data JSON valid dari PathSource.")
         return False
 
     try:
@@ -68,5 +85,4 @@ def mergeJson(
             
     else:
         logger.info("pathTarget kosong. Mengembalikan data gabungan sebagai String JSON.")
-        json_string = combined_df.to_json(orient="records")
-        return json_string
+        return combined_df.to_json(orient="records")

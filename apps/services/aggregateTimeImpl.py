@@ -2,14 +2,15 @@ from apps.common.aggregateTime import aggregateTime
 
 def main():
     pathSource = "apps/data/result/convertedTime.json" 
+
     pathTarget = "apps/data/result/aggregatedTime.json"
+    
     keyTime = "t" 
     keyValues = ["nvalue"]
-    groupKeys = ["wct", "technum", "param"] 
+    groupKeys = ["wct", "technum", "param"]
 
-    print("Memulai proses agregasi waktu...")
-
-    sukses = aggregateTime(
+    print("Memulai proses agregasi waktu JSON...")
+    hasil = aggregateTime(
         pathSource=pathSource,
         pathTarget=pathTarget,
         keyTime=keyTime,
@@ -17,10 +18,13 @@ def main():
         groupKeys=groupKeys
     )
 
-    if sukses:
-        print("Proses agregasi waktu berhasil disimpan.")
+    if hasil is True:
+        print(f"Selesai! File hasil agregasi berhasil dibuat di: {pathTarget}\n")
+    elif isinstance(hasil, str):
+        print("Selesai! Data disimpan dalam JsonString.")
+        print(f"Bentuk datanya: {hasil[:100]}...\n")
     else:
-        print("Proses agregasi waktu gagal.")
+        print("Gagal menjalankan agregasi waktu JSON.\n")
 
 if __name__ == "__main__":
     main()
