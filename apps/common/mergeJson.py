@@ -6,16 +6,12 @@ logger = logging.getLogger(__name__)
 
 def mergeJson(
     pathSource: list | None = None,
-    pathTarget: str | None = None,
+    pathTarget: str | Path | None = None,
     keySource: list | None = None
-) -> bool:
+) -> bool | str:
 
     if not pathSource:
         logger.error("PathSource kosong. Harap berikan list file yang ingin digabungkan.")
-        return False
-
-    if not pathTarget:
-        logger.error("PathTarget kosong. Harap berikan lokasi penyimpanan file hasil.")
         return False
 
     logger.info(f"Memulai proses merge untuk {len(pathSource)} file JSON...")
@@ -57,15 +53,20 @@ def mergeJson(
     except Exception as e:
         logger.error(f"Gagal menggabungkan Json: {e}")
         return False
-
-    target_obj = Path(path_target)
     
-    target_obj.parent.mkdir(parents=True, exist_ok=True)
-    
-    try:
-        combined_df.to_json(target_obj, orient="records", indent=4)
-        logger.info(f"SUKSES! Data merge berhasil disimpan di: {target_obj}")
-        return True
-    except Exception as e:
-        logger.error(f"Gagal menyimpan file ke PathTarget ({target_obj}): {e}")
-        return False
+    if pathTarget:
+        target_obj = Path(pathTarget)
+        target_obj.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            combined_df.to_json(target_obj, orient="records", indent=4)
+            logger.info(f"SUKSES! Data merge berhasil disimpan di: {target_obj}")
+            return True
+        except Exception as e:
+            logger.error(f"Gagal menyimpan file ke PathTarget ({target_obj}): {e}")
+            return False
+            
+    else:
+        logger.info("pathTarget kosong. Mengembalikan data gabungan sebagai String JSON.")
+        json_string = combined_df.to_json(orient="records")
+        return json_string

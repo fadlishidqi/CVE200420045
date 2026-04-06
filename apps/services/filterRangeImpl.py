@@ -1,7 +1,7 @@
 from apps.common.filterRange import filterRange
 
 def main():
-    pathSource = "apps/data/result/aggregatedTime.json"
+    pathSource = "apps/data/result/comparedValue.json"
     pathTarget = "apps/data/result/filteredRange.json"
     pathPreset = "apps/preset/preset.json"
 

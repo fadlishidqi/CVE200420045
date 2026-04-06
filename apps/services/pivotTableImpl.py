@@ -1,7 +1,6 @@
 from apps.common.pivotTable import pivotTable
 
 def main():
-    # Lokasi file input (misal hasil dari aggregateTime yang sudah rapi) dan outputnya
     pathSource = "apps/data/result/aggregatedTime.json"
     pathTarget = "apps/data/result/pivotedData.json"
 

@@ -2,31 +2,28 @@ from apps.common.mergeJson import mergeJson
 
 def main():
     pathSource = [
-        "apps/data/raw/POLIMER_CUSHION-POSITION_3M2026.json",
-        "apps/data/raw/POLIMER_INJ-MAX-PRESSURE_3M2026.json",
-        "apps/data/raw/POLIMER_NH1-TEMP_3M2026.json",
-        "apps/data/raw/POLIMER_NH2-TEMP_3M2026.json",
+        "apps/data/raw/CUSHIONPOS.json",
+        "apps/data/raw/MAXPRESSURE.json",
+        "apps/data/raw/NH1.json",
+        "apps/data/raw/NH2.json",
     ]
-
-    pathTarget = "apps/data/result/rawMerge.json"
-
-    keySource = [
-        "time", "dcrea", "vwctid", "vmachineid", 
-        "vparam", "nvalue", "vvalue", "nhhigh", "nhigh", "nllow", "nlow", "catg"
-    ]
-
-    print("Memulai proses merge data...")
-
-    sukses = mergeJson(
+    
+    print("Mencoba jalankan merge dan simpan sebagai file...")
+    sukses_file = mergeJson(
         pathSource=pathSource,
-        pathTarget=pathTarget,
-        keySource=keySource
+        pathTarget="apps/data/result/rawMerge.json"
     )
+    if sukses_file == True:
+        print("Selesai! File gabungan berhasil dibuat.\n")
 
-    if sukses:
-        print("Proses merge berhasil disimpan.")
-    else:
-        print("Proses merge data gagal.")
+    print("Mencoba jalankan merge tanpa pathTarget...")
+    hasil_string = mergeJson(
+        pathSource=pathSource
+    )
+    
+    if type(hasil_string) == str:
+        print("Selesai! Data tidak dibuat file, melainkan masuk ke memori/variabel.")
+        print(f"Bentuk datanya: {hasil_string[:100]}...")
 
 if __name__ == "__main__":
     main()
