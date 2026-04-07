@@ -4,8 +4,7 @@ def main():
     pathSource = "apps/data/result/pivotedData.json" 
     
     pathTarget = "apps/data/result/forwardFilledData.json"
-    
-    groupCols = ["technum"]
+    groupCols = ["wct", "technum"] 
     timeCol = "t"
 
     print("Memulai proses forward fill JSON...")
@@ -17,10 +16,10 @@ def main():
     )
 
     if hasil is True:
-        print(f"Selesai! File hasil forward fill berhasil dibuat di: {pathTarget}\n")
+        print(f"Selesai! File hasil pengisian berhasil dibuat di: {pathTarget}\n")
     elif isinstance(hasil, str):
         print("Selesai! Data disimpan dalam JsonString.")
-        print(f"Bentuk datanya: {hasil[:100]}...\n")
+        print(f"Bentuk datanya: {hasil[:300]}...\n")
     else:
         print("Gagal menjalankan forward fill JSON.\n")
 
