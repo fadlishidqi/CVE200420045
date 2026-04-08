@@ -6,8 +6,8 @@ def main():
     pathTarget = "apps/data/result/replacedData.json"
     
     keySource = ["category"]
-    fromData = ["C", "A"]
-    toData = [1, 2]
+    fromData = ["C", "NC"]
+    toData = [1, 0]
 
     print("Memulai proses replace data JSON...")
     hasil = replaceData(

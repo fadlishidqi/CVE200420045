@@ -1,11 +1,12 @@
 from apps.common.mergeJson import mergeJson
 
 def main():
+    
     pathSource = [
-        "apps/data/raw/POLIMER_CUSHION-POSITION_3M2026.json",
-        "apps/data/raw/POLIMER_INJ-MAX-PRESSURE_3M2026.json",
-        "apps/data/raw/POLIMER_NH1-TEMP_3M2026.json",
-        "apps/data/raw/POLIMER_NH2-TEMP_3M2026.json",
+        "apps/data/raw/CUSHION.json",
+        "apps/data/raw/MAXPRESS.json",
+        "apps/data/raw/NH1.json",
+        "apps/data/raw/NH2.json",
     ]
     
     pathTarget = "apps/data/result/rawMerge.json" 

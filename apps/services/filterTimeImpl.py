@@ -1,7 +1,7 @@
 from apps.common.filterTime import filterTime
 
 def main():
-    pathSource = "apps/data/result/convertedTime.json" 
+    pathSource = "apps/data/result/aggregatedTime.json" 
     pathTarget = "apps/data/result/filteredTime.json"
     
     keyStart = "t"

@@ -1,7 +1,7 @@
 from apps.common.pivotTable import pivotTable
 
 def main():
-    pathSource = "apps/data/result/filteredRange.json" 
+    pathSource = "apps/data/result/normalizedData.json" 
     
     pathPreset = "apps/preset/preset.json"
     pathTarget = "apps/data/result/pivotedData.json"
