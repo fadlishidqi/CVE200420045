@@ -6,8 +6,8 @@ def main():
     
     keyStart = "t"
     keyEnd = "dcrea"
-    maxDelta = 5
-    unitDelta = "minutes"
+    maxDelta = 1
+    unitDelta = "hour"
 
     print("Memulai proses filter time delta...")
     hasil = filterTime(

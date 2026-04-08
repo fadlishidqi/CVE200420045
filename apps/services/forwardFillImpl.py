@@ -1,27 +1,30 @@
 from apps.common.forwardFill import forwardFill
 
 def main():
-    pathSource = "apps/data/result/pivotedData.json" 
+    pathSource = "apps/data/result/pivotedData.json"
+    pathTarget = "apps/data/result/final_output.json"
+    pathPreset = "apps/preset/preset.json"
     
-    pathTarget = "apps/data/result/forwardFilledData.json"
-    groupCols = ["wct", "technum"] 
-    timeCol = "t"
-
-    print("Memulai proses forward fill JSON...")
+    sortCols = ["t"]
+    groupCols = ["wct", "technum"]
+    dropNulls = True 
+    
+    print("Memulai proses Forward Fill sekaligus Validator...")
     hasil = forwardFill(
         pathSource=pathSource,
         pathTarget=pathTarget,
+        pathPreset=pathPreset,
+        sortCols=sortCols,
         groupCols=groupCols,
-        timeCol=timeCol
+        dropNulls=dropNulls
     )
 
     if hasil is True:
-        print(f"Selesai! File hasil pengisian berhasil dibuat di: {pathTarget}\n")
+        print(f"Selesai! File bersih tanpa Null berhasil dibuat di: {pathTarget}\n")
     elif isinstance(hasil, str):
         print("Selesai! Data disimpan dalam JsonString.")
-        print(f"Bentuk datanya: {hasil[:300]}...\n")
     else:
-        print("Gagal menjalankan forward fill JSON.\n")
+        print("Gagal menjalankan Forward Fill dan Validasi.\n")
 
 if __name__ == "__main__":
     main()

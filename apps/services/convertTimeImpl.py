@@ -2,13 +2,11 @@ from apps.common.convertTime import convertTime
 
 def main():
     pathSource = "apps/data/result/renamedData.json" 
-    
     pathTarget = "apps/data/result/convertedTime.json"
-    
     keySource = ["t", "dcrea"] 
-    formatTime = "%d-%m-%Y %H:%M:%S"
+    formatTime = "epoch_ms" 
 
-    print("Memulai proses convert format waktu JSON...")
+    print(f"Memulai proses convert format waktu JSON menjadi {formatTime}...")
     hasil = convertTime(
         pathSource=pathSource,
         pathTarget=pathTarget,

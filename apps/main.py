@@ -8,24 +8,27 @@ from apps.common.replaceData import replaceData
 from apps.common.compareValue import compareValue
 from apps.common.filterRange import filterRange
 
-from apps.common.normalization import apply_minmax_normalization
-from apps.common.outlier import apply_iqr_outlier
+from apps.common.normalization import normalization
+from apps.common.outlier import outlier
 
 from apps.common.pivotTable import pivotTable
 from apps.common.forwardFill import forwardFill
 from apps.common.writeStringJsonToFileJson import writeStringJsonToFileJson
 
 def main():
-    # READ PRESET (GLOBAL SETTINGS)
     print("Membaca preset.json...")
     preset_path = "apps/preset/preset.json"
     with open(preset_path, "r") as f:
         preset = json.load(f)
     
-    do_normalization = preset.get("global_settings", {}).get("normalization", False)
-    do_outlier = preset.get("global_settings", {}).get("outlier", False)
+    do_normalization = False
+    do_outlier = False
+    for item in preset.get("global_settings", []):
+        if item.get("key") == "normalization" and str(item.get("value")).lower() == "true":
+            do_normalization = True
+        if item.get("key") == "outlier" and str(item.get("value")).lower() == "true":
+            do_outlier = True
 
-    # DEFINISI PATH & PARAMETER AWAL
     pathSource = [
         "apps/data/raw/CUSHION.json",
         "apps/data/raw/MAXPRESS.json",
@@ -56,7 +59,7 @@ def main():
     json_str = check_str(json_str, "Rename Parameter")
 
     print("[3/11] Convert Time...")
-    json_str = convertTime(pathSource=json_str, pathTarget=None, keySource=["t", "dcrea"], formatTime="%d-%m-%Y %H:%M:%S")
+    json_str = convertTime(pathSource=json_str, pathTarget=None, keySource=["t", "dcrea"], formatTime="epoch_ms")
     json_str = check_str(json_str, "Convert Time")
 
     print("[4/11] Aggregate Time...")
@@ -64,8 +67,9 @@ def main():
         pathSource=json_str, 
         pathTarget=None, 
         keyTime="t", 
-        keyValues=["nvalue"], 
-        groupKeys=["wct", "technum", "param"]
+        keyValues = ["nvalue", "llow", "low", "vvalue", "nhhigh", "nhigh", "nllow", "nlow", "catg"], 
+        aggMethods = ["mean", "last", "last", "last", "last", "last", "last", "last", "last"],
+        keyGroups=["wct", "technum", "param"]
     )
     json_str = check_str(json_str, "Aggregate Time")
 
@@ -86,7 +90,7 @@ def main():
         pathTarget=None, 
         keySource=["category"],
         fromData=["C", "NC"],
-        toData=[1, 2]
+        toData=[1, 0]
     )
     json_str = check_str(json_str, "Replace Data")
 
@@ -107,20 +111,23 @@ def main():
     json_str = filterRange(
         pathSource=json_str, 
         pathTarget=None, 
-        pathPreset=preset_path
+        pathPreset=preset_path,
+        keyValue="nvalue",
+        keyWct="wct",
+        keyTech="technum",
+        keyParam="param"
     )
     json_str = check_str(json_str, "Filter Range")
 
     print("\nMengecek konfigurasi Normalization / Outlier dari preset.json...")
     if do_outlier:
         print("    -> Outlier bernilai TRUE, menjalankan proses Outlier...")
-        json_str = apply_iqr_outlier(
+        json_str = outlier(
             pathSource=json_str, 
             pathTarget=None, 
-            groupCols=["wct", "technum", "param"], 
-            valueCol="nvalue", 
-            paramCol="param", 
-            pathPreset=preset_path
+            pathPreset=preset_path,
+            groupCols=["wct", "technum", "param"],
+            keyValue="nvalue"
         )
         json_str = check_str(json_str, "Outlier")
     else:
@@ -128,12 +135,14 @@ def main():
 
     if do_normalization:
         print("    -> Normalization bernilai TRUE, menjalankan proses Normalization...")
-        json_str = apply_minmax_normalization(
+        json_str = normalization(
             pathSource=json_str, 
             pathTarget=None, 
-            valueCol="nvalue", 
-            paramCol="param", 
-            pathPreset=preset_path
+            pathPreset=preset_path,
+            keyValue="nvalue",
+            keyWct="wct",
+            keyTech="technum",
+            keyParam="param"
         )
         json_str = check_str(json_str, "Normalization")
     else:
@@ -150,12 +159,14 @@ def main():
     )
     json_str = check_str(json_str, "Pivot Table")
 
-    print("[10/11] Forward Fill (Mengisi nilai kosong)...")
+    print("[10/11] Forward Fill (Mengisi nilai kosong & Hapus Null)...")
     json_str = forwardFill(
         pathSource=json_str,
         pathTarget=None,
+        pathPreset=preset_path,
+        sortCols=["t"],
         groupCols=["wct", "technum"],
-        timeCol="t"
+        dropNulls=True
     )
     json_str = check_str(json_str, "Forward Fill")
 
@@ -163,7 +174,7 @@ def main():
     hasil_akhir = writeStringJsonToFileJson(stringJson=json_str, pathTarget=pathTarget_final)
 
     if hasil_akhir is True:
-        print("\nPIPELINE SELESAI! Data berhasil di-export sesuai format yang diinginkan.")
+        print("\nData berhasil disimpan sesuai format yang diinginkan.")
     else:
         print("\nGagal menyimpan file hasil akhir.")
 

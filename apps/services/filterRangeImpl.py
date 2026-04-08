@@ -4,23 +4,24 @@ def main():
     pathSource = "apps/data/result/comparedValue.json" 
     pathTarget = "apps/data/result/filteredRange.json"
     pathPreset = "apps/preset/preset.json"
-    keyValue = "nvalue"
-    keyParam = "param"
 
-    print("Memulai proses filter range data JSON...")
+    print("Memulai proses Filter Range...")
+    
     hasil = filterRange(
         pathSource=pathSource,
         pathTarget=pathTarget,
         pathPreset=pathPreset,
-        keyValue=keyValue,
-        keyParam=keyParam
+        keyValue="nvalue",
+        keyWct="wct",
+        keyTech="technum",
+        keyParam="param"
     )
 
     if hasil is True:
         print(f"Selesai! File hasil filter range berhasil dibuat di: {pathTarget}\n")
     elif isinstance(hasil, str):
-        print("Selesai! Data tidak dibuat file, melainkan masuk ke memori/variabel.")
-        print(f"Bentuk datanya: {hasil[:100]}...\n")
+        print("Selesai! Data disimpan dalam JsonString.")
+        print(f"Bentuk datanya preview: {hasil[:150]}...\n")
     else:
         print("Gagal menjalankan filter range JSON.\n")
 

@@ -6,12 +6,14 @@ import io
 
 logger = logging.getLogger(__name__)
 
-def apply_minmax_normalization(
+def normalization(
     pathSource: str | Path | pd.DataFrame, 
     pathTarget: str | Path | None = None,
-    valueCol: str | None = None, 
-    paramCol: str | None = None,
-    pathPreset: str | Path | dict | None = None
+    pathPreset: str | Path | dict | None = None,
+    keyValue: str = "nvalue", 
+    keyWct: str = "wct",
+    keyTech: str = "technum",
+    keyParam: str = "param"
 ) -> bool | str | pd.DataFrame:
     
     if pathPreset is None:
@@ -31,10 +33,35 @@ def apply_minmax_normalization(
                 return False
             with open(preset_obj, 'r') as f:
                 preset_data = json.load(f)
+                
+        detail_params = preset_data.get("detailParam", [])
+        if not detail_params:
+            logger.error("Tidak ada data 'detailParam' di dalam file preset.")
+            return False
+
+        min_dict = {}
+        max_dict = {}
+        
+        for item in detail_params:
+            wct_id = item.get("wctid")
+            tech_num = item.get("technum")
+            param_id = item.get("paramid")
+            setting_key = item.get("key")
+            setting_value = item.get("value")
             
-        param_settings = preset_data.get("parameters", {})
-        min_dict = {k: v.get("rangeMin") for k, v in param_settings.items()}
-        max_dict = {k: v.get("rangeMax") for k, v in param_settings.items()}
+            if not wct_id or not tech_num or not param_id or not setting_key or setting_value is None:
+                continue
+
+            composite_key = f"{wct_id}_{tech_num}_{param_id}"
+
+            try:
+                num_value = float(setting_value)
+                if setting_key == "rangeMin":
+                    min_dict[composite_key] = num_value
+                elif setting_key == "rangeMax":
+                    max_dict[composite_key] = num_value
+            except ValueError:
+                pass
 
         df = None
         if isinstance(pathSource, pd.DataFrame):
@@ -59,26 +86,30 @@ def apply_minmax_normalization(
             logger.error("Tipe input pathSource tidak didukung!")
             return False
 
-        if paramCol not in df.columns or valueCol not in df.columns:
-            logger.error(f"Kolom '{paramCol}' atau '{valueCol}' tidak ditemukan di data.")
+        required_cols = [keyValue, keyWct, keyTech, keyParam]
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            logger.error(f"Kolom berikut tidak ditemukan di data: {missing_cols}")
             return False
 
-        df['__temp_min'] = df[paramCol].map(min_dict)
-        df['__temp_max'] = df[paramCol].map(max_dict)
+        df['__temp_composite'] = df[keyWct].astype(str) + "_" + df[keyTech].astype(str) + "_" + df[keyParam].astype(str)
 
-        df[valueCol] = pd.to_numeric(df[valueCol], errors="coerce")
+        df['__temp_min'] = df['__temp_composite'].map(min_dict)
+        df['__temp_max'] = df['__temp_composite'].map(max_dict)
+
+        df[keyValue] = pd.to_numeric(df[keyValue], errors="coerce")
         df['__temp_min'] = pd.to_numeric(df['__temp_min'], errors="coerce")
         df['__temp_max'] = pd.to_numeric(df['__temp_max'], errors="coerce")
             
         range_diff = df['__temp_max'] - df['__temp_min']
         
-        mask = (range_diff > 0) & df['__temp_min'].notnull() & df['__temp_max'].notnull() & df[valueCol].notnull()
+        mask = (range_diff > 0) & df['__temp_min'].notnull() & df['__temp_max'].notnull() & df[keyValue].notnull()
         
-        df.loc[mask, valueCol] = (df.loc[mask, valueCol] - df.loc[mask, '__temp_min']) / range_diff[mask]
+        df.loc[mask, keyValue] = (df.loc[mask, keyValue] - df.loc[mask, '__temp_min']) / range_diff[mask]
         
-        df = df.drop(columns=['__temp_min', '__temp_max'])
+        df = df.drop(columns=['__temp_composite', '__temp_min', '__temp_max'])
         
-        logger.info("Min-Max Normalization via Preset berhasil diterapkan.")
+        logger.info("Min-Max Normalization Absolute via Preset berhasil diterapkan.")
         
         if pathTarget:
             target_obj = Path(pathTarget)

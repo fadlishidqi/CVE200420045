@@ -30,25 +30,18 @@ def convertTime(
         if isinstance(pathSource, str):
             cleaned_str = pathSource.strip()
             if cleaned_str.startswith('{') or cleaned_str.startswith('['):
-                logger.info("Input terdeteksi sebagai String JSON. Membaca dari memori...")
+                logger.info("Input terdeteksi sebagai String JSON.")
                 df = pd.read_json(io.StringIO(cleaned_str))
             else:
                 source_obj = Path(pathSource)
                 if not source_obj.exists():
-                    logger.error(f"File sumber tidak ditemukan: {source_obj}")
                     return False
-                logger.info(f"Membaca file untuk di-convert format waktunya: {source_obj.name}")
                 df = pd.read_json(source_obj)
-                
         elif isinstance(pathSource, Path):
             if not pathSource.is_file():
-                logger.error(f"File sumber tidak ditemukan: {pathSource}")
                 return False
-            logger.info(f"Membaca file untuk di-convert format waktunya: {pathSource.name}")
             df = pd.read_json(pathSource)
-            
         else:
-            logger.error("Tipe input pathSource tidak didukung!")
             return False
 
         missing_cols = [col for col in keySource if col not in df.columns]
@@ -56,8 +49,34 @@ def convertTime(
             logger.error(f"Kolom berikut tidak ditemukan di source: {missing_cols}")
             return False
         
+        def safe_epoch_convert(val, is_ms=False):
+            if pd.isnull(val): 
+                return None
+            
+            if val.tzinfo is None:
+                val = val.tz_localize('+07:00')
+                
+            if is_ms:
+                return int(val.timestamp() * 1000)
+            else:
+                return int(val.timestamp())
+
         for col in keySource:
-            df[col] = pd.to_datetime(df[col], errors='coerce').dt.strftime(formatTime)
+            dt_series = pd.to_datetime(df[col], errors='coerce')
+            
+            if formatTime == "epoch_ms":
+                df[col] = dt_series.apply(lambda x: safe_epoch_convert(x, is_ms=True))
+            elif formatTime == "epoch":
+                df[col] = dt_series.apply(lambda x: safe_epoch_convert(x, is_ms=False))
+            else:
+                def to_string_tz(val):
+                    if pd.isnull(val): return None
+                    if val.tzinfo is None:
+                        return val.strftime(formatTime)
+                    else:
+                        return val.tz_convert('+07:00').tz_localize(None).strftime(formatTime)
+                
+                df[col] = dt_series.apply(to_string_tz)
             
         logger.info(f"Berhasil mengubah format waktu pada kolom {keySource} menjadi '{formatTime}'")
 
@@ -65,10 +84,8 @@ def convertTime(
             target_obj = Path(pathTarget)
             target_obj.parent.mkdir(parents=True, exist_ok=True)
             df.to_json(target_obj, orient="records", indent=4)
-            logger.info(f"SUKSES! File hasil convert waktu disimpan di: {target_obj}")
             return True
         else:
-            logger.info("pathTarget kosong. Mengembalikan hasil convert sebagai String JSON.")
             return df.to_json(orient="records")
         
     except Exception as e:

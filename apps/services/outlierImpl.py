@@ -1,32 +1,29 @@
-from apps.common.outlier import apply_iqr_outlier
+from apps.common.outlier import outlier
 
 def main():
     pathSource = "apps/data/result/filteredRange.json" 
-    
     pathTarget = "apps/data/result/outlierHandled.json"
-    
     pathPreset = "apps/preset/preset.json"
-    groupCols = ["technum", "param"]
-    valueCol = "nvalue"
-    paramCol = "param"
 
-    print("Memulai proses IQR Outlier JSON...")
-    hasil = apply_iqr_outlier(
+    groupCols = ["wct", "technum", "param"]
+    keyValue = "nvalue"
+
+    print(f"Memulai proses penanganan Outlier per grup: {groupCols}...")
+    
+    hasil = outlier(
         pathSource=pathSource,
         pathTarget=pathTarget,
+        pathPreset=pathPreset,
         groupCols=groupCols,
-        valueCol=valueCol,
-        paramCol=paramCol,
-        pathPreset=pathPreset
+        keyValue=keyValue
     )
 
     if hasil is True:
-        print(f"Selesai! File hasil pembersihan outlier berhasil dibuat di: {pathTarget}\n")
+        print(f"Selesai! File bersih dari outlier berhasil dibuat di: {pathTarget}\n")
     elif isinstance(hasil, str):
         print("Selesai! Data disimpan dalam JsonString.")
-        print(f"Bentuk datanya: {hasil[:100]}...\n")
     else:
-        print("Gagal menjalankan IQR Outlier JSON.\n")
+        print("Gagal menjalankan fungsi Outlier.\n")
 
 if __name__ == "__main__":
     main()

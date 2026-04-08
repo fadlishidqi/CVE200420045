@@ -11,6 +11,8 @@ def filterRange(
     pathTarget: str | Path | None = None, 
     pathPreset: str | Path | None = None, 
     keyValue: str = "nvalue", 
+    keyWct: str = "wct",
+    keyTech: str = "technum",
     keyParam: str = "param"
 ) -> bool | str:
     
@@ -28,13 +30,34 @@ def filterRange(
         with open(preset_obj, 'r') as f:
             preset_data = json.load(f)
             
-        param_settings = preset_data.get("parameters", {})
-        if not param_settings:
-            logger.error("Tidak ada data 'parameters' di dalam file preset.")
+        detail_params = preset_data.get("detailParam", [])
+        if not detail_params:
+            logger.error("Tidak ada data 'detailParam' di dalam file preset.")
             return False
 
-        min_dict = {k: v.get("rangeMin") for k, v in param_settings.items()}
-        max_dict = {k: v.get("rangeMax") for k, v in param_settings.items()}
+        min_dict = {}
+        max_dict = {}
+        
+        for item in detail_params:
+            wct_id = item.get("wctid")
+            tech_num = item.get("technum")
+            param_id = item.get("paramid")
+            setting_key = item.get("key")
+            setting_value = item.get("value")
+            
+            if not wct_id or not tech_num or not param_id or not setting_key or setting_value is None:
+                continue
+
+            composite_key = f"{wct_id}_{tech_num}_{param_id}"
+
+            try:
+                num_value = float(setting_value)
+                if setting_key == "rangeMin":
+                    min_dict[composite_key] = num_value
+                elif setting_key == "rangeMax":
+                    max_dict[composite_key] = num_value
+            except ValueError:
+                pass
 
         df = None
         
@@ -60,36 +83,41 @@ def filterRange(
             logger.error("Tipe input pathSource tidak didukung!")
             return False
 
-        if keyValue not in df.columns or keyParam not in df.columns:
-            logger.error(f"Kolom '{keyValue}' atau '{keyParam}' tidak ditemukan di dataset.")
+        required_cols = [keyValue, keyWct, keyTech, keyParam]
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            logger.error(f"Kolom berikut tidak ditemukan di dataset: {missing_cols}")
             return False
 
         initial_row_count = len(df)
         df[keyValue] = pd.to_numeric(df[keyValue], errors='coerce')
 
-        df['__temp_min'] = df[keyParam].map(min_dict)
-        df['__temp_max'] = df[keyParam].map(max_dict)
+        df['__temp_composite'] = df[keyWct].astype(str) + "_" + df[keyTech].astype(str) + "_" + df[keyParam].astype(str)
+
+        df['__temp_min'] = df['__temp_composite'].map(min_dict)
+        df['__temp_max'] = df['__temp_composite'].map(max_dict)
 
         cond_not_null = df[keyValue].notna()
         cond_has_preset = df['__temp_min'].notna() & df['__temp_max'].notna()
         cond_in_range = (df[keyValue] >= df['__temp_min']) & (df[keyValue] <= df['__temp_max'])
 
         df_filtered = df[cond_not_null & cond_has_preset & cond_in_range].copy()
-        df_filtered = df_filtered.drop(columns=['__temp_min', '__temp_max'])
+        
+        df_filtered = df_filtered.drop(columns=['__temp_composite', '__temp_min', '__temp_max'])
 
         final_row_count = len(df_filtered)
         dropped_count = initial_row_count - final_row_count
         
-        logger.info(f"Filter Range Selesai. {dropped_count} baris dibuang (Di luar batas preset atau parameter tidak terdaftar).")
+        logger.info(f"Filter Range Selesai. {dropped_count} baris dibuang (Di luar batas preset atau parameter/mesin tidak terdaftar).")
 
         if pathTarget:
             target_obj = Path(pathTarget)
             target_obj.parent.mkdir(parents=True, exist_ok=True)
             df_filtered.to_json(target_obj, orient="records", indent=4)
-            logger.info(f"SUKSES! File hasil filter range dengan preset disimpan di: {target_obj}")
+            logger.info(f"SUKSES! File hasil filter range disimpan di: {target_obj}")
             return True
         else:
-            logger.info("pathTarget kosong. Mengembalikan hasil filter range sebagai String JSON.")
+            logger.info("pathTarget kosong. Mengembalikan hasil filter range sbg String JSON.")
             return df_filtered.to_json(orient="records")
         
     except Exception as e:

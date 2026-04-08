@@ -15,7 +15,6 @@ def pivotTable(
     valueCol: str | list | None = None,
     aggFunc: str = 'first',
     timeCol: str | None = None,
-    timeFormat: str = '%d-%m-%Y %H:%M:%S'
 ) -> bool | str:
     
     if not pathSource:
@@ -50,11 +49,9 @@ def pivotTable(
             logger.error("Tipe input pathSource tidak didukung!")
             return False
 
-        if timeCol and timeCol in df.columns:
-            df[timeCol] = pd.to_datetime(df[timeCol], format=timeFormat, errors='coerce')
-
         for col in indexCols:
-            df[col] = df[col].fillna("N/A")
+            if col in df.columns:
+                df[col] = df[col].fillna("N/A")
 
         if pathPreset:
             possible_values = ['nvalue', 'category', 'threshold']
@@ -74,7 +71,7 @@ def pivotTable(
         )
 
         if pathPreset:
-            logger.info("Menerapkan konfigurasi dari Preset...")
+            logger.info("Menerapkan konfigurasi dari Preset baru...")
             preset = {}
             if isinstance(pathPreset, dict):
                 preset = pathPreset
@@ -88,12 +85,30 @@ def pivotTable(
                 with open(p_preset, 'r') as f:
                     preset = json.load(f)
                     
-            wct_val = preset.get("wctid", "UNKNOWN")
-            tech_val = preset.get("technum", "UNKNOWN")
-            preset_params = preset.get("parameters", {})
+            detail_params = preset.get("detailParam", [])
+            
+            wct_val = "UNKNOWN"
+            tech_val = "UNKNOWN"
+            preset_params = {}
+
+            for item in detail_params:
+                pid = item.get("paramid")
+                if not pid: continue
+                
+                if wct_val == "UNKNOWN":
+                    wct_val = item.get("wctid", "UNKNOWN")
+                    tech_val = item.get("technum", "UNKNOWN")
+                    
+                if pid not in preset_params:
+                    preset_params[pid] = {}
+                    
+                k = item.get("key")
+                v = item.get("value")
+                
+                if k in ["category", "threshold"]:
+                    preset_params[pid][k] = (str(v).lower() == "true")
 
             df_result = df_pivoted.index.to_frame(index=False)
-
             nvalue_cols, critical_cols, threshold_cols = [], [], []
 
             for param_name, param_config in preset_params.items():
@@ -103,7 +118,7 @@ def pivotTable(
                     nvalue_cols.append(nval_col)
                 
                 if param_config.get('category') is True and ('category', param_name) in df_pivoted.columns:
-                    crit_col = f"critical_{wct_val}_{tech_val}_{param_name}"
+                    crit_col = f"category_{wct_val}_{tech_val}_{param_name}" # Menggunakan nama category agar rapi
                     df_result[crit_col] = df_pivoted[('category', param_name)].values
                     critical_cols.append(crit_col)
                     
@@ -124,8 +139,11 @@ def pivotTable(
             df_result.columns.name = None
 
         if timeCol and timeCol in df_result.columns:
-            df_result = df_result.sort_values(by=timeCol, ascending=True)
-            df_result[timeCol] = pd.to_datetime(df_result[timeCol]).dt.strftime(timeFormat)
+            if pd.api.types.is_numeric_dtype(df_result[timeCol]):
+                df_result = df_result.sort_values(by=timeCol, ascending=True)
+            else:
+                df_result['__temp_time__'] = pd.to_datetime(df_result[timeCol], errors='coerce')
+                df_result = df_result.sort_values(by='__temp_time__', ascending=True).drop(columns=['__temp_time__'])
 
         if pathTarget:
             target_obj = Path(pathTarget)

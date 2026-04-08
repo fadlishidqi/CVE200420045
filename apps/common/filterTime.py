@@ -63,13 +63,22 @@ def filterTime(
 
         initial_row_count = len(df)
 
-        dt_start = pd.to_datetime(df[keyStart], errors='coerce', dayfirst=True)
-        dt_end = pd.to_datetime(df[keyEnd], errors='coerce', dayfirst=True)
+        def parse_time(series):
+            if pd.api.types.is_numeric_dtype(series):
+                if series.max() > 1e11:
+                    return pd.to_datetime(series, unit='ms', errors='coerce')
+                else:
+                    return pd.to_datetime(series, unit='s', errors='coerce')
+            else:
+                return pd.to_datetime(series, errors='coerce', dayfirst=True)
+
+        dt_start = parse_time(df[keyStart])
+        dt_end = parse_time(df[keyEnd])
 
         cond_valid_date = dt_start.notna() & dt_end.notna()
         cond_not_future = dt_start <= dt_end
         cond_max_delta = (dt_end - dt_start) <= max_td
-        
+    
         df_filtered = df[cond_valid_date & cond_not_future & cond_max_delta].copy()
         
         final_row_count = len(df_filtered)
